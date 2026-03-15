@@ -44,7 +44,39 @@
 - Reputation（可选）:
   - `https://endpoint.apivoid.com/...`（需要 `APIVOID_API_KEY`）
 
-## 3. 基本运行要求
+## 3. 安装
+
+### 3.1 一键安装（推荐）
+
+```bash
+bash install/install.sh
+```
+
+安装脚本会自动执行：
+
+1. 检查 Python 3.11+ 是否可用。
+2. 若缺失则尝试自动安装（支持 `brew` / `apt-get` / `dnf`）。
+3. 将程序安装到用户目录（默认 `~/.local/share/network-purity-check/current`）。
+4. 生成全局命令（默认 `~/.local/bin/network-purity-check`）。
+5. 自动处理 PATH（写入 `~/.zshrc` 或 `~/.bashrc`）。
+6. 验证 CLI 支持 `--help` 和 `-h`。
+
+### 3.2 安装脚本可选环境变量
+
+- `NPC_INSTALL_PREFIX`：覆盖安装目录。
+- `NPC_BIN_DIR`：覆盖全局命令目录。
+- `NPC_SHELL_RC`：覆盖 shell rc 文件路径。
+
+示例：
+
+```bash
+NPC_INSTALL_PREFIX="$HOME/.local/share/network-purity-check" \
+NPC_BIN_DIR="$HOME/.local/bin" \
+NPC_SHELL_RC="$HOME/.zshrc" \
+bash install/install.sh
+```
+
+## 4. 基本运行要求
 
 要让脚本稳定工作，建议满足以下条件：
 
@@ -54,30 +86,27 @@
 4. 若使用信誉查询，需设置环境变量：
    - `APIVOID_API_KEY=<your_key>`
 
-## 4. 快速开始
-
-在项目根目录执行：
+## 5. 使用方式
 
 ```bash
-./network-purity-check run
-./network-purity-check run --json
-./network-purity-check run --verbose --timeout 8
+network-purity-check run
+network-purity-check run --json
+network-purity-check run --verbose --timeout 8
 ```
 
-等价入口：
+等价模块入口：
 
 ```bash
 python3.11 -m network_purity_check.cli run --json
 ```
 
-## 5. 命令行参数
+## 6. 参数与帮助
 
-- `run`：执行检测
-- `--json`：JSON 输出
-- `--verbose`：显示调试信息
-- `--timeout`：请求超时（秒，默认 `5`）
+- `network-purity-check --help`
+- `network-purity-check -h`
+- `network-purity-check run --help`
 
-## 6. 评分与策略
+## 7. 评分与策略
 
 当前评分针对 Claude 风险场景，关键项高权重：
 
@@ -92,7 +121,7 @@ python3.11 -m network_purity_check.cli run --json
 export CLAUDE_ALLOWED_COUNTRIES="US,JP,SG,TW"
 ```
 
-## 7. 输出字段说明（JSON）
+## 8. 输出字段说明（JSON）
 
 - `ip`: 公网 IP
 - `country`: IP 所在国家
@@ -106,8 +135,8 @@ export CLAUDE_ALLOWED_COUNTRIES="US,JP,SG,TW"
 - `purity_score`: 风险分
 - `status`: `clean` / `acceptable` / `risky`
 
-## 8. 安全与隐私说明
+## 9. 安全与隐私说明
 
-- 项目代码中不应存储你的密钥、账号、手机号、真实地址等隐私信息。
+- 项目代码中不应存储密钥、账号、手机号、真实地址等隐私信息。
 - API Key 仅通过环境变量读取，不写入代码。
 - 建议在 CI/CD 和本地使用密钥管理，不要提交到仓库。
