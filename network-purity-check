@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+python3.11 -m network_purity_check.cli "$@"
