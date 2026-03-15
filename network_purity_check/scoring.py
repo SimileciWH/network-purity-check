@@ -12,6 +12,8 @@ class ScoreInput:
     country_mismatch: bool
     ip_consistency: bool
     claude_supported: bool
+    split_tunnel: bool
+    split_check_ok: bool
 
 
 def calculate_score(inp: ScoreInput) -> tuple[int, str]:
@@ -40,6 +42,10 @@ def calculate_score(inp: ScoreInput) -> tuple[int, str]:
         score -= 35
     if not inp.ip_consistency:
         score -= 40
+    if inp.split_tunnel:
+        score -= 35
+    if not inp.split_check_ok:
+        score -= 10
 
     score = max(0, score)
     if score >= 85:

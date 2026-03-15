@@ -16,6 +16,9 @@ class Report:
     webrtc_leak: bool
     webrtc_check_ok: bool
     ip_consistency: bool
+    split_tunnel: bool
+    split_check_ok: bool
+    domestic_egress_ip: str
     purity_score: int
     status: str
     debug: dict[str, str] = field(default_factory=dict)
@@ -43,6 +46,9 @@ def print_text(report: Report) -> None:
     print(f"WebRTC Leak: {str(report.webrtc_leak).lower()}")
     print(f"WebRTC Check OK: {str(report.webrtc_check_ok).lower()}")
     print(f"IP Consistency: {str(report.ip_consistency).lower()}")
+    print(f"Split Tunnel: {str(report.split_tunnel).lower()}")
+    print(f"Split Check OK: {str(report.split_check_ok).lower()}")
+    print(f"Domestic Egress IP: {report.domestic_egress_ip}")
     print()
     print(f"Purity Score: {report.purity_score}")
     print(f"Status: {_STATUS_MAP.get(report.status, 'RISKY')}")

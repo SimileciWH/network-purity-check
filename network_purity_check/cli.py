@@ -10,6 +10,7 @@ from .output import Report, print_json, print_text
 from .policy import is_claude_supported_country
 from .reputation import check_ip_reputation
 from .scoring import ScoreInput, calculate_score
+from .split_tunnel import detect_split_tunnel
 from .webrtc import WebRTCResult, detect_webrtc_leak
 
 
@@ -65,6 +66,16 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
         if verbose:
             print(f"[debug] ip consistency check failed: {exc}")
 
+    split_check_ok = True
+    domestic_egress_ip = ""
+    split_tunnel = False
+    try:
+        split_tunnel, split_check_ok, domestic_egress_ip = detect_split_tunnel(overseas_ip=ip, timeout=timeout)
+    except Exception as exc:  # noqa: BLE001
+        split_check_ok = False
+        if verbose:
+            print(f"[debug] split tunnel detection failed: {exc}")
+
     country_mismatch = bool(dns_result.dns_country and metadata.country and dns_result.dns_country != metadata.country)
     claude_supported = is_claude_supported_country(metadata.country)
 
@@ -79,6 +90,8 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
             country_mismatch=country_mismatch,
             ip_consistency=ip_consistency,
             claude_supported=claude_supported,
+            split_tunnel=split_tunnel,
+            split_check_ok=split_check_ok,
         )
     )
 
@@ -95,6 +108,9 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
         webrtc_leak=webrtc_result.webrtc_leak,
         webrtc_check_ok=webrtc_check_ok,
         ip_consistency=ip_consistency,
+        split_tunnel=split_tunnel,
+        split_check_ok=split_check_ok,
+        domestic_egress_ip=domestic_egress_ip,
         purity_score=score,
         status=status,
     )
@@ -106,6 +122,9 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
             "stun_public_ip": webrtc_result.stun_public_ip,
             "dns_check_ok": str(dns_check_ok).lower(),
             "webrtc_check_ok": str(webrtc_check_ok).lower(),
+            "split_check_ok": str(split_check_ok).lower(),
+            "split_tunnel": str(split_tunnel).lower(),
+            "domestic_egress_ip": domestic_egress_ip,
             "claude_supported": str(claude_supported).lower(),
             "allowed_countries": os.getenv("CLAUDE_ALLOWED_COUNTRIES", ""),
         }

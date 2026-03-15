@@ -13,6 +13,7 @@
 - DNS 泄漏检测（国家一致性）
 - WebRTC/STUN 探测
 - 多源 IP 一致性
+- 分流代理检测（国内/国外出口是否一致）
 - 最终 `purity_score` 与 `status`
 
 ## 2. 依赖关系
@@ -114,6 +115,7 @@ python3.11 -m network_purity_check.cli run --json
 - `ip_consistency=false`：高惩罚
 - `country_mismatch=true`：高惩罚
 - `dns_check_ok=false` / `webrtc_check_ok=false`：检测失败也惩罚
+- `split_tunnel=true`：国内出口与海外出口不一致，高惩罚
 
 可选地区白名单覆盖：
 
@@ -132,6 +134,8 @@ export CLAUDE_ALLOWED_COUNTRIES="US,JP,SG,TW"
 - `dns_country` / `dns_check_ok`: DNS 结果与检测是否成功
 - `webrtc_leak` / `webrtc_check_ok`: WebRTC 结果与检测是否成功
 - `ip_consistency`: 多源 IP 是否一致
+- `split_tunnel` / `split_check_ok`: 是否检测到分流与检测是否成功
+- `domestic_egress_ip`: 国内目标站点视角看到的出口 IP
 - `purity_score`: 风险分
 - `status`: `clean` / `acceptable` / `risky`
 
