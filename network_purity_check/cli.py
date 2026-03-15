@@ -68,9 +68,12 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
 
     split_check_ok = True
     domestic_egress_ip = ""
+    split_check_source = ""
     split_tunnel = False
     try:
-        split_tunnel, split_check_ok, domestic_egress_ip = detect_split_tunnel(overseas_ip=ip, timeout=timeout)
+        split_tunnel, split_check_ok, domestic_egress_ip, split_check_source = detect_split_tunnel(
+            overseas_ip=ip, timeout=timeout
+        )
     except Exception as exc:  # noqa: BLE001
         split_check_ok = False
         if verbose:
@@ -125,6 +128,7 @@ def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
             "split_check_ok": str(split_check_ok).lower(),
             "split_tunnel": str(split_tunnel).lower(),
             "domestic_egress_ip": domestic_egress_ip,
+            "split_check_source": split_check_source,
             "claude_supported": str(claude_supported).lower(),
             "allowed_countries": os.getenv("CLAUDE_ALLOWED_COUNTRIES", ""),
         }
