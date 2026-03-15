@@ -1,5 +1,6 @@
 import argparse
 import os
+import ssl
 import sys
 
 from .asn import classify_asn
@@ -26,14 +27,33 @@ def _build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--json", action="store_true", dest="json_out", help="output JSON")
     run_parser.add_argument("--verbose", action="store_true", help="print debug information")
     run_parser.add_argument("--timeout", type=float, default=5.0, help="API timeout in seconds")
+    run_parser.add_argument("--insecure", action="store_true", help="disable TLS certificate verification")
+    run_parser.add_argument("--ca-bundle", default="", help="custom CA bundle path for TLS verification")
 
     return parser
 
 
-def run_command(json_out: bool, verbose: bool, timeout: float) -> int:
+def configure_tls(insecure: bool, ca_bundle: str) -> None:
+    if insecure:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        return
+
+    bundle = (ca_bundle or os.getenv("NPC_CA_BUNDLE", "") or os.getenv("SSL_CERT_FILE", "")).strip()
+    if not bundle:
+        return
+
+    def _ctx_factory() -> ssl.SSLContext:
+        return ssl.create_default_context(cafile=bundle)
+
+    ssl._create_default_https_context = _ctx_factory
+
+
+def run_command(json_out: bool, verbose: bool, timeout: float, insecure: bool, ca_bundle: str) -> int:
     if timeout <= 0:
         print("error: timeout must be > 0", file=sys.stderr)
         return 2
+
+    configure_tls(insecure=insecure, ca_bundle=ca_bundle)
 
     ip, ip_sources = detect_public_ip(timeout=timeout, verbose=verbose)
     metadata = fetch_ip_metadata(ip=ip, timeout=timeout)
@@ -149,7 +169,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        return run_command(json_out=args.json_out, verbose=args.verbose, timeout=args.timeout)
+        return run_command(
+            json_out=args.json_out,
+            verbose=args.verbose,
+            timeout=args.timeout,
+            insecure=args.insecure,
+            ca_bundle=args.ca_bundle,
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1

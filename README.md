@@ -93,6 +93,8 @@ bash install/install.sh
 network-purity-check run
 network-purity-check run --json
 network-purity-check run --verbose --timeout 8
+network-purity-check run --json --ca-bundle /path/to/cacert.pem
+network-purity-check run --json --insecure
 ```
 
 等价模块入口：
@@ -106,6 +108,11 @@ python3.11 -m network_purity_check.cli run --json
 - `network-purity-check --help`
 - `network-purity-check -h`
 - `network-purity-check run --help`
+
+证书问题处理（`CERTIFICATE_VERIFY_FAILED`）：
+
+- 推荐：`--ca-bundle /path/to/cacert.pem` 或环境变量 `NPC_CA_BUNDLE`
+- 临时排障：`--insecure`（会关闭 TLS 证书校验，不建议长期使用）
 
 ## 7. 评分与策略
 
