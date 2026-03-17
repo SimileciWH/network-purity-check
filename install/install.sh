@@ -101,6 +101,30 @@ choose_python() {
   return 1
 }
 
+ensure_certifi() {
+  local py="$1"
+  if "$py" - <<'PY' >/dev/null 2>&1
+import certifi  # noqa: F401
+PY
+  then
+    log "Python package 'certifi' is already available."
+    return 0
+  fi
+
+  warn "Python package 'certifi' not found, trying to install with pip --user..."
+  "$py" -m pip install --user --upgrade certifi >/dev/null
+  if "$py" - <<'PY' >/dev/null 2>&1
+import certifi  # noqa: F401
+PY
+  then
+    log "Installed Python package 'certifi'."
+    return 0
+  fi
+
+  err "Failed to install 'certifi'. Please install it manually: $py -m pip install --user certifi"
+  return 1
+}
+
 pick_shell_rc() {
   if [[ -n "$SHELL_RC_OVERRIDE" ]]; then
     echo "$SHELL_RC_OVERRIDE"
@@ -158,6 +182,7 @@ main() {
   local python_bin
   python_bin="$(choose_python)"
   log "Using Python interpreter: $python_bin"
+  ensure_certifi "$python_bin"
 
   local commit
   commit="$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "manual")"

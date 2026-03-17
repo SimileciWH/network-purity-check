@@ -21,7 +21,9 @@
 ### 2.1 运行时依赖
 
 - Python 3.11（必须）
-- 标准库（内置，无需安装第三方包）
+- 第三方依赖
+  - `certifi`（用于 CA 根证书，自动启用）
+- 标准库（内置）
   - `argparse`
   - `urllib`
   - `socket`
@@ -111,6 +113,7 @@ python3.11 -m network_purity_check.cli run --json
 
 证书问题处理（`CERTIFICATE_VERIFY_FAILED`）：
 
+- 默认会自动使用 `certifi` CA bundle（无需额外设置）
 - 推荐：`--ca-bundle /path/to/cacert.pem` 或环境变量 `NPC_CA_BUNDLE`
 - 临时排障：`--insecure`（会关闭 TLS 证书校验，不建议长期使用）
 

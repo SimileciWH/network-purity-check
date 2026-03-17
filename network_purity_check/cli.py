@@ -38,7 +38,17 @@ def configure_tls(insecure: bool, ca_bundle: str) -> None:
         ssl._create_default_https_context = ssl._create_unverified_context
         return
 
-    bundle = (ca_bundle or os.getenv("NPC_CA_BUNDLE", "") or os.getenv("SSL_CERT_FILE", "")).strip()
+    # Explicit user config first, then sane default (certifi), then legacy fallback.
+    bundle = (ca_bundle or os.getenv("NPC_CA_BUNDLE", "")).strip()
+    if not bundle:
+        try:
+            import certifi
+        except ImportError:
+            bundle = ""
+        else:
+            bundle = certifi.where()
+    if not bundle:
+        bundle = os.getenv("SSL_CERT_FILE", "").strip()
     if not bundle:
         return
 
